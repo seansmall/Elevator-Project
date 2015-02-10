@@ -33,7 +33,7 @@ public class BaselineElevator {
 								// add passenger weight to elevator
 								e.get(i).addWeight(upQueue.get(j).weight);
 								// calculate waiting time
-								CentralControl.totalWaitTime += (time - upQueue.get(j).arrivalTime)
+								CentralControl.waitTime += (time - upQueue.get(j).arrivalTime)
 									+ (upQueue.get(j).endFloor - upQueue.get(j).startFloor);
 								upQueue.get(j).isPickedUp(true);
 						}
@@ -60,7 +60,7 @@ public class BaselineElevator {
 								// add passenger weight to elevator
 								e.get(i).addWeight(downQueue.get(j).weight);
 								// calculates waiting time
-								CentralControl.totalWaitTime += (time - downQueue.get(j).arrivalTime)
+								CentralControl.waitTime += (time - downQueue.get(j).arrivalTime)
 									+ (downQueue.get(j).startFloor - downQueue.get(j).endFloor);
 								downQueue.get(j).isPickedUp(true);
 						}

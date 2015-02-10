@@ -25,9 +25,9 @@ public class sequenceGenerator {
 			if (i < CentralControl.SIZE*0.4) {
 				at = 1 + RNG.nextInt(morning);
 			} else if (i >= CentralControl.SIZE*0.4 && i <= CentralControl.SIZE*0.6) {
-				at = RNG.nextInt(day);
+				at = 1 + RNG.nextInt(day);
 			} else {
-				at = day/10*6 + RNG.nextInt(night);
+				at = 1 + day/10*6 + RNG.nextInt(night);
 			}
 			
 			int sf = 1 + RNG.nextInt(CentralControl.TOPFLOOR);
@@ -92,5 +92,4 @@ public class sequenceGenerator {
 	
 	public static void main (String[] args) {
 	}
-	
 }

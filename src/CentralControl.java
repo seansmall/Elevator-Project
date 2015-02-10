@@ -5,8 +5,8 @@ import java.util.ArrayList;
 public class CentralControl {
 
 	// Configurable values
-	public static final int SIZE = 1000;
-	public static final int TOPFLOOR = 25;
+	public static final int SIZE = 2000;
+	public static final int TOPFLOOR = 5;
 	public static final int NUM_OF_ELEVATORS = 2;
 	private static final String FILENAME =
 			"S" + SIZE + "F" + TOPFLOOR + "E" + NUM_OF_ELEVATORS;
@@ -16,6 +16,7 @@ public class CentralControl {
 	public static final int MAX_WEIGHT = 230;
 	public static final int MAX_ELEVATOR_WEIGHT = 2400;
 
+	public static double waitTime = 0;
 	public static double totalWaitTime = 0;
 
 	static class Person {
@@ -132,10 +133,13 @@ public class CentralControl {
 	
 	        BaselineElevator.runBaseline(e, upQueue, downQueue);
 	
-	        double awt = totalWaitTime / sequence.size();
+	        double awt = waitTime / sequence.size();
 			System.out.println("avarage waiting time: " + awt * 15 / 60 + " min / person");
 			System.out.println();
-			totalWaitTime = 0;
+			totalWaitTime += waitTime;
+			waitTime = 0;
 		}
+		double atwt = totalWaitTime / (SIZE * n);
+		System.out.println("avarage waiting time: " + atwt * 15 / 60 + " min / person");
 	}
 }
