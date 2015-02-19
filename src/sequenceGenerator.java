@@ -17,21 +17,22 @@ public class sequenceGenerator {
 	
 	
 	public static ArrayList<CentralControl.Person> createNewSequence
-	(ArrayList<CentralControl.Person> sequence) {
+	(ArrayList<CentralControl.Person> sequence, int size, int topFloor, long seed) {
+		RNG.setSeed(seed);
 		
 		//TODO; convert to real time
-		for (int i = 0; i < CentralControl.SIZE; i++) {
+		for (int i = 0; i < size; i++) {
 			int at;
-			if (i < CentralControl.SIZE*0.4) {
+			if (i < size*0.4) {
 				at = 1 + RNG.nextInt(morning);
-			} else if (i >= CentralControl.SIZE*0.4 && i <= CentralControl.SIZE*0.6) {
+			} else if (i >= size*0.4 && i <= size*0.6) {
 				at = 1 + RNG.nextInt(day);
 			} else {
 				at = 1 + day/10*6 + RNG.nextInt(night);
 			}
 			
-			int sf = 1 + RNG.nextInt(CentralControl.TOPFLOOR);
-			int ef = 1 + RNG.nextInt(CentralControl.TOPFLOOR);
+			int sf = 1 + RNG.nextInt(topFloor);
+			int ef = 1 + RNG.nextInt(topFloor);
 			int w = CentralControl.MIN_WEIGHT + RNG.nextInt(CentralControl.MAX_WEIGHT - CentralControl.MIN_WEIGHT);
 			CentralControl.Person person = new CentralControl.Person(at, sf, ef, w, false);
             sequence.add(person);
@@ -60,36 +61,34 @@ public class sequenceGenerator {
 	
 	public static void saveToTxt(
 			ArrayList<CentralControl.Person> sequence,
-			String fileName) throws FileNotFoundException,
+			String fileName, String dirName) throws FileNotFoundException,
 			UnsupportedEncodingException {
 		
 		// checks if filename already exists
-		// and adds an index if it does
-	      File f = new File(fileName + ".txt");
-	      String newName;
-	      if(f.exists() && !f.isDirectory()) {
-	    	  int count = 1;
-	    	  do {
-    			  newName = fileName + "(" + count + ")";
-    			  f = new File(newName + ".txt");
-	    		  count++;
-	  	    	} while (f.exists() && !f.isDirectory());
+		if (!new File(dirName).exists()) {
+			new File(dirName).mkdir();
+		}
+		  
+	      File f = new File(dirName + File.separator + fileName + ".txt");
+
+	      if(!f.exists() && !f.isDirectory()) {
+	    	// saves file to directory
+		      PrintWriter writer = new PrintWriter(f, "UTF-8");
+				writer.println("ArrivalTime,StartFloor,EndFloor,Weight");
+				for (int i = 0; i < sequence.size(); i++) {
+					int at = sequence.get(i).arrivalTime;
+					int sf = sequence.get(i).startFloor;
+					int ef = sequence.get(i).endFloor;
+					int w = sequence.get(i).weight;
+					writer.println(at + "," + sf + "," + ef + "," + w + ",");
+				}
+				writer.close();
+				// prints to console
+				System.out.println("Filename: " + f);
 	      }
-	      // saves file to directory
-	      PrintWriter writer = new PrintWriter(f, "UTF-8");
-			writer.println("ArrivalTime,StartFloor,EndFloor,Weight");
-			for (int i = 0; i < sequence.size(); i++) {
-				int at = sequence.get(i).arrivalTime;
-				int sf = sequence.get(i).startFloor;
-				int ef = sequence.get(i).endFloor;
-				int w = sequence.get(i).weight;
-				writer.println(at + "," + sf + "," + ef + "," + w + ",");
-			}
-			writer.close();
-			// prints to console
-			System.out.println("Filename: " + f);
 	}
 	
-	public static void main (String[] args) {
+	public static void main (String[] args) throws FileNotFoundException, UnsupportedEncodingException {
+
 	}
 }
