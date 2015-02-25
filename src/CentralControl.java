@@ -1,3 +1,5 @@
+import java.io.FileNotFoundException;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 
 
@@ -8,7 +10,7 @@ public class CentralControl {
 	public static final int TOPFLOOR = 5;
 	public static final int NUM_OF_ELEVATORS = 2;
 	private static final int NUM_OF_RUNS = 1;
-	private static final long SEED = 123456;
+	private static final long SEED = 1234567;
 
 	// weights in pounds
 	public static final int MIN_WEIGHT = 100;
@@ -53,6 +55,8 @@ public class CentralControl {
 		int people;
 		int peoplePickedUp;
 		int peopleDropedOff;
+		String status;
+		int internalClock;
 
 		public Elevator
 		(final int pos, final boolean up,
@@ -65,11 +69,24 @@ public class CentralControl {
 			this.type = type;
 			this.people = per;
 		}
-		public void increment(final int pos) {
-			this.position = pos + 1;
+		public Elevator
+		(final int pos, final boolean up,
+				final boolean down, final int weight,
+				final String type, final int per, String stat) {
+			this.position = pos;
+			this.up = up;
+			this.down = down;
+			this.currentElevatorWeight = weight;
+			this.type = type;
+			this.people = per;
+			this.status = stat;
 		}
-		public void decrement(final int pos) {
-			this.position = pos -1;
+		
+		public void increment() {
+			this.position += 1;
+		}
+		public void decrement() {
+			this.position -= 1;
 		}
 		public void setDirUp(final boolean dir) {
 			this.up = dir;
@@ -98,6 +115,12 @@ public class CentralControl {
 		public void resetCount() {
 			this.peoplePickedUp = 0;
 			this.peopleDropedOff = 0;
+		}
+		public void setStatus(String status) {
+			this.status = status;
+		}
+		public void addTimeUnit() {
+			this.internalClock += 1;
 		}
 	}
 
@@ -130,8 +153,25 @@ public class CentralControl {
 		}
 	}
 	
-	public static void simulation1 (String type) {
+	public static void createMainElevators(
+			final ArrayList<Elevator> e) {
+		for (int i = 0; i < CentralControl.NUM_OF_ELEVATORS; i++) {
+			// TODO: work on different configurations
+			if (i % 2 == 0) {
+				Elevator elevator =
+						new Elevator(0, true, false, 0, "Baseline", 0, "idle");
+				e.add(elevator);
+			} else {
+				Elevator elevator =
+						new Elevator(TOPFLOOR, false, true, 0, "Baseline", 0, "idle");
+		        e.add(elevator);
+			}
+		}
+	}
+	
+	public static void simulation1 (String type) throws FileNotFoundException, UnsupportedEncodingException {
 		
+		@SuppressWarnings("unused")
 		final ProgressBar bar = ProgressBar.createBar();
 		
 		System.out.println("Starting simulation1:");
@@ -152,9 +192,13 @@ public class CentralControl {
 		for (int i = 1; i <= n; i++) {
 			// create new sequence
 			final ArrayList<Person> sequence = new ArrayList<>();
-			sequenceGenerator.createNewSequence(sequence, SIZE, TOPFLOOR, i * SEED);
+			ArrayList<CentralControl.Person> mainSequence = new ArrayList<>();
+			sequenceGenerator.createNewBaselineSequence(sequence, SIZE, TOPFLOOR, i * SEED);
 			sequenceGenerator.sortSequence(sequence);
-//			sequenceGenerator.saveToTxt(sequence, fileName, "test");
+			mainSequence = sequenceGenerator.convertToMainSequene(sequence);
+			
+			sequenceGenerator.saveToTxt(sequence, "baseline_sequence", "output");
+			sequenceGenerator.saveToTxt(mainSequence, "main_sequence", "output");
 	
 	        // divides sequence array into; up/down queues
 	        final ArrayList<Person> upQueue = new ArrayList<>();
@@ -167,27 +211,43 @@ public class CentralControl {
 	 			createBaselineElevators(e);
 	 			// run baseline
 		        BaselineElevator.runBaseline(e, upQueue, downQueue);
+		        
+		        totalWaitTime += waitTime;
+				waitTime = 0;
+				
+				double atwt = totalWaitTime / (SIZE * n);
+				System.out.println("awt: " + atwt * 15 / 60 + " min / person");
 		    	} 
-			else if (type == "") {
-		        	
+			else if (type == "main") {
+				final ArrayList<Elevator> e = new ArrayList<>();
+				createMainElevators(e);
+				// run elevator
+				MainElevator.runElevator(e, upQueue, downQueue, mainSequence);
+				
+				totalWaitTime += waitTime;
+				waitTime = 0;
+				
+				double atwt = totalWaitTime / (SIZE * n);
+				System.out.println("awt: " + atwt * 5 / 60 + " min / person");
 		        }
 			
-			totalWaitTime += waitTime;
-			waitTime = 0;
-			int percent = (int) Math.round((double) i /(double) n * 100);
-			ProgressBar.updateBar(percent);
+			
+			
+			
+		
+		int percent = (int) Math.round((double) i /(double) n * 100);
+		ProgressBar.updateBar(percent);
 		}
-		double atwt = totalWaitTime / (SIZE * n);
-		System.out.println("awt: " + atwt * 15 / 60 + " min / person");
+		
 		
 		System.out.println();
 		System.out.println("simulation1 done!");
 	}
 	
 
-	public static void main(final String[] args){
+	public static void main(final String[] args) throws FileNotFoundException, UnsupportedEncodingException{
 		
-		simulation1("baseline");
+		simulation1("main");
 		
 	}
 }

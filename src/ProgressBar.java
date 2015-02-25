@@ -2,6 +2,7 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 
+@SuppressWarnings("serial")
 public class ProgressBar extends JPanel {
 
   static JProgressBar pbar;

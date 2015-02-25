@@ -7,6 +7,7 @@ public class BaselineElevator {
 			final ArrayList<CentralControl.Person> upQueue,
 			final ArrayList<CentralControl.Person> downQueue) {
 		
+		
 		System.out.printf("Time \t\t");
 		for (int i = 0; i < e.size(); i++) {
 		System.out.printf("Floor \t");
@@ -16,11 +17,13 @@ public class BaselineElevator {
 		System.out.println();
 		
 		int day = 1920;
+
         // loop simulates a day. [1 unit = 15 sec]
 		for (int time = 0; time <= day; time++) {
 			
 			// runs for every elevator
 			for (int i = 0; i < e.size(); i++) {
+				
 				if (time == day && !(e.get(i).people == 0)) {
 					day++;
 				}
@@ -28,8 +31,8 @@ public class BaselineElevator {
 				if (e.get(i).up == true) {
 					for (int j = 0; j < upQueue.size(); j++) {
 						// picks up passenger
-						if ((upQueue.get(j).pickedUp == false) 
-							&& (e.get(i).currentElevatorWeight < CentralControl.MAX_ELEVATOR_WEIGHT) 
+						if ((upQueue.get(j).pickedUp == false)
+							&& (e.get(i).currentElevatorWeight < CentralControl.MAX_ELEVATOR_WEIGHT)
 							&& (time >= upQueue.get(j).arrivalTime)
 							&& (e.get(i).position == upQueue.get(j).startFloor)) {
 							//add passenger to elevator
@@ -37,13 +40,15 @@ public class BaselineElevator {
 							// assigns the elevator # to the passenger
 							upQueue.get(j).setElevatorNr(i);
 							// calculate waiting time
-							CentralControl.waitTime += (time - upQueue.get(j).arrivalTime)
-								+ (upQueue.get(j).endFloor - upQueue.get(j).startFloor);
-								upQueue.get(j).isPickedUp(true);
+//							CentralControl.waitTime += (time - upQueue.get(j).arrivalTime)
+//								+ (upQueue.get(j).endFloor - upQueue.get(j).startFloor);
+							upQueue.get(j).isPickedUp(true);
 						}
 						// drops off passenger
-						else if ((i == upQueue.get(j).elevator) && (upQueue.get(j).pickedUp == true)
+						else if ((upQueue.get(j).elevator == i) && (upQueue.get(j).pickedUp == true)
 							&& (e.get(i).position == upQueue.get(j).endFloor)) {
+							
+							CentralControl.waitTime += time - upQueue.get(j).arrivalTime;
 							// remove person from elevator
 							e.get(i).removePerson(upQueue.get(j));
 							// remove person from queue
@@ -56,8 +61,9 @@ public class BaselineElevator {
 					if (e.get(i).position == (CentralControl.TOPFLOOR)) {
 						e.get(i).setDirUp(false);
 						e.get(i).setDirDown(true);
+						e.get(i).decrement();
 					} else {
-					e.get(i).increment(e.get(i).position);
+						e.get(i).increment();
 					}
 				}
 				// checks if any available passengers are going down
@@ -73,26 +79,29 @@ public class BaselineElevator {
 							// assigns the elevator # to the passenger
 							downQueue.get(j).setElevatorNr(i);
 							// calculates waiting time
-							CentralControl.waitTime += (time - downQueue.get(j).arrivalTime)
-								+ (downQueue.get(j).startFloor - downQueue.get(j).endFloor);
-								downQueue.get(j).isPickedUp(true);	
+//							CentralControl.waitTime += (time - downQueue.get(j).arrivalTime)
+//								+ (downQueue.get(j).startFloor - downQueue.get(j).endFloor);
+							downQueue.get(j).isPickedUp(true);	
 						}
 						// drops off passenger
 						else if ((i == downQueue.get(j).elevator) && (downQueue.get(j).pickedUp == true)
 								&& (e.get(i).position == downQueue.get(j).endFloor)) {
+							
+								CentralControl.waitTime += time - downQueue.get(j).arrivalTime;
 								// remove person from elevator
 								e.get(i).removePerson(downQueue.get(j));
 								// remove person from queue
 								downQueue.remove(j);
 								
-							}
+						}
 					}
 					// moves elevator one step down
 					if (e.get(i).position == 0) {
 						e.get(i).setDirUp(true);
 						e.get(i).setDirDown(false);
+						e.get(i).increment();
 					} else {
-					e.get(i).decrement(e.get(i).position);
+						e.get(i).decrement();
 					}
 				}
 			}
@@ -107,7 +116,7 @@ public class BaselineElevator {
 				System.out.println();
 				
 //				try {
-//				    Thread.sleep(5000);                 //1000 milliseconds is one second.
+//				    Thread.sleep(2000);                 //1000 milliseconds is one second.
 //				} catch(InterruptedException ex) {
 //				    Thread.currentThread().interrupt();
 //				}

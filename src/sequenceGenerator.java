@@ -10,13 +10,14 @@ public class sequenceGenerator {
 	private static final Random RNG =
             new Random (Long.getLong ("seed", System.nanoTime()));
 	
+	
 	static int hours = 8;
-	static int day = 240 * hours; //60 sec * 60 min / 15 = 240
+	static int day = 240 * hours; //60 sec * 60 min * 8 / 15 = 1920
 	static int morning = 240 * 1;
 	static int night = 240 * 1;
 	
 	
-	public static ArrayList<CentralControl.Person> createNewSequence
+	public static ArrayList<CentralControl.Person> createNewBaselineSequence
 	(ArrayList<CentralControl.Person> sequence, int size, int topFloor, long seed) {
 		RNG.setSeed(seed);
 		
@@ -33,6 +34,11 @@ public class sequenceGenerator {
 			
 			int sf = 1 + RNG.nextInt(topFloor);
 			int ef = 1 + RNG.nextInt(topFloor);
+			if (sf == ef) {
+				sf = 1 + RNG.nextInt(topFloor);
+				ef = 1 + RNG.nextInt(topFloor);
+			}
+			
 			int w = CentralControl.MIN_WEIGHT + RNG.nextInt(CentralControl.MAX_WEIGHT - CentralControl.MIN_WEIGHT);
 			CentralControl.Person person = new CentralControl.Person(at, sf, ef, w, false);
             sequence.add(person);
@@ -58,6 +64,22 @@ public class sequenceGenerator {
 	        }
 		return sequence;
 	}
+	public static ArrayList<CentralControl.Person> convertToMainSequene(ArrayList<CentralControl.Person> sequence) {
+			
+		final ArrayList<CentralControl.Person> newSequence = new ArrayList<>();
+		
+		for (int i = 0; i < sequence.size(); i++) {
+			int at = sequence.get(i).arrivalTime * 3;
+			int sf = sequence.get(i).startFloor;
+			int ef = sequence.get(i).endFloor;
+			int w = sequence.get(i).weight;
+		
+			CentralControl.Person person = new CentralControl.Person(at, sf, ef, w, false);
+	        newSequence.add(person);
+		}
+			return newSequence;
+		}
+	
 	
 	public static void saveToTxt(
 			ArrayList<CentralControl.Person> sequence,
