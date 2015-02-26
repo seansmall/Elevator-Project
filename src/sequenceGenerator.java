@@ -24,6 +24,7 @@ public class sequenceGenerator {
 		//TODO; convert to real time
 		for (int i = 0; i < size; i++) {
 			int at;
+			int id = i;
 			if (i < size*0.4) {
 				at = 1 + RNG.nextInt(morning);
 			} else if (i >= size*0.4 && i <= size*0.6) {
@@ -34,13 +35,14 @@ public class sequenceGenerator {
 			
 			int sf = 1 + RNG.nextInt(topFloor);
 			int ef = 1 + RNG.nextInt(topFloor);
-			if (sf == ef) {
+			while (sf == ef) {
 				sf = 1 + RNG.nextInt(topFloor);
 				ef = 1 + RNG.nextInt(topFloor);
 			}
-			
+
 			int w = CentralControl.MIN_WEIGHT + RNG.nextInt(CentralControl.MAX_WEIGHT - CentralControl.MIN_WEIGHT);
-			CentralControl.Person person = new CentralControl.Person(at, sf, ef, w, false);
+			
+			CentralControl.Person person = new CentralControl.Person(at, sf, ef, w, id, false);
             sequence.add(person);
 		}
 		return sequence;
@@ -72,9 +74,10 @@ public class sequenceGenerator {
 			int at = sequence.get(i).arrivalTime * 3;
 			int sf = sequence.get(i).startFloor;
 			int ef = sequence.get(i).endFloor;
+			int id = sequence.get(i).id;
 			int w = sequence.get(i).weight;
 		
-			CentralControl.Person person = new CentralControl.Person(at, sf, ef, w, false);
+			CentralControl.Person person = new CentralControl.Person(at, sf, ef, w, id, false);
 	        newSequence.add(person);
 		}
 			return newSequence;
@@ -96,17 +99,18 @@ public class sequenceGenerator {
 	      if(!f.exists() && !f.isDirectory()) {
 	    	// saves file to directory
 		      PrintWriter writer = new PrintWriter(f, "UTF-8");
-				writer.println("ArrivalTime,StartFloor,EndFloor,Weight");
+				writer.println("ArrivalTime,StartFloor,EndFloor,Weight,id");
 				for (int i = 0; i < sequence.size(); i++) {
 					int at = sequence.get(i).arrivalTime;
 					int sf = sequence.get(i).startFloor;
 					int ef = sequence.get(i).endFloor;
 					int w = sequence.get(i).weight;
-					writer.println(at + "," + sf + "," + ef + "," + w + ",");
+					int id = sequence.get(i).id;
+					writer.println(at + "," + sf + "," + ef + "," + w + "," + id + ",");
 				}
 				writer.close();
 				// prints to console
-				System.out.println("Filename: " + f);
+//				System.out.println("Filename: " + f);
 	      }
 	}
 	

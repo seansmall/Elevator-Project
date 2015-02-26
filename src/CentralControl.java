@@ -6,11 +6,11 @@ import java.util.ArrayList;
 public class CentralControl {
 	
 	// Configurable values
-	public static final int SIZE = 2000;
-	public static final int TOPFLOOR = 5;
+	public static final int SIZE = 500;
+	public static final int TOPFLOOR = 20;
 	public static final int NUM_OF_ELEVATORS = 2;
 	private static final int NUM_OF_RUNS = 1;
-	private static final long SEED = 1234567;
+	private static final long SEED = 12345;
 
 	// weights in pounds
 	public static final int MIN_WEIGHT = 100;
@@ -18,23 +18,27 @@ public class CentralControl {
 	public static final int MAX_ELEVATOR_WEIGHT = 2400;
 
 	public static double waitTime = 0;
-	private static double totalWaitTime = 0;
+	private static double baselineTotalWaitTime = 0;
+	private static double mainTotalWaitTime = 0;
 
 	static class Person {
         int arrivalTime;
         int startFloor;
         int endFloor;
         int weight;
+        int id;
         boolean pickedUp;
         int elevator;
 
         public Person
         (final int time, final int start, final int end,
-        		final int weight, final boolean pickedUp) {
+        		final int weight, final int id,
+        		final boolean pickedUp) {
             this.arrivalTime = time;
             this.startFloor = start;
             this.endFloor = end;
             this.weight = weight;
+            this.id = id;
             this.pickedUp = pickedUp;
         }
 
@@ -72,7 +76,7 @@ public class CentralControl {
 		public Elevator
 		(final int pos, final boolean up,
 				final boolean down, final int weight,
-				final String type, final int per, String stat) {
+				final String type, final int per, String stat, final int time) {
 			this.position = pos;
 			this.up = up;
 			this.down = down;
@@ -80,6 +84,7 @@ public class CentralControl {
 			this.type = type;
 			this.people = per;
 			this.status = stat;
+			this.internalClock = time;
 		}
 		
 		public void increment() {
@@ -131,8 +136,11 @@ public class CentralControl {
         	if (sequence.get(j).endFloor > sequence.get(j).startFloor) {
         		upQueue.add(sequence.get(j));
         	}
-        	if (sequence.get(j).endFloor < sequence.get(j).startFloor) {
+        	else if (sequence.get(j).endFloor < sequence.get(j).startFloor) {
         		downQueue.add(sequence.get(j));
+        	}
+        	else {
+        		sequence.remove(j);
         	}
         }
 	}
@@ -143,7 +151,7 @@ public class CentralControl {
 			// TODO: work on different configurations
 			if (i % 2 == 0) {
 				Elevator elevator =
-						new Elevator(0, true, false, 0, "Baseline", 0);
+						new Elevator(1, true, false, 0, "Baseline", 0);
 				e.add(elevator);
 			} else {
 				Elevator elevator =
@@ -159,11 +167,11 @@ public class CentralControl {
 			// TODO: work on different configurations
 			if (i % 2 == 0) {
 				Elevator elevator =
-						new Elevator(0, true, false, 0, "Baseline", 0, "idle");
+						new Elevator(1, true, false, 0, "Main", 0, "idle", 0);
 				e.add(elevator);
 			} else {
 				Elevator elevator =
-						new Elevator(TOPFLOOR, false, true, 0, "Baseline", 0, "idle");
+						new Elevator(TOPFLOOR, false, true, 0, "Main", 0, "idle", 0);
 		        e.add(elevator);
 			}
 		}
@@ -192,49 +200,46 @@ public class CentralControl {
 		for (int i = 1; i <= n; i++) {
 			// create new sequence
 			final ArrayList<Person> sequence = new ArrayList<>();
-			ArrayList<CentralControl.Person> mainSequence = new ArrayList<>();
 			sequenceGenerator.createNewBaselineSequence(sequence, SIZE, TOPFLOOR, i * SEED);
 			sequenceGenerator.sortSequence(sequence);
-			mainSequence = sequenceGenerator.convertToMainSequene(sequence);
+			final ArrayList<Person> mainSequence =
+					new ArrayList<>(sequenceGenerator.convertToMainSequene(sequence));
 			
 			sequenceGenerator.saveToTxt(sequence, "baseline_sequence", "output");
 			sequenceGenerator.saveToTxt(mainSequence, "main_sequence", "output");
 	
-	        // divides sequence array into; up/down queues
-	        final ArrayList<Person> upQueue = new ArrayList<>();
-	        final ArrayList<Person> downQueue = new ArrayList<>();
-	        createQueues(sequence, upQueue, downQueue);
 	        
 			if (type  == "baseline") {
+				// divides sequence array into; up/down queues
+		        final ArrayList<Person> upQueue = new ArrayList<>();
+		        final ArrayList<Person> downQueue = new ArrayList<>();
+		        createQueues(sequence, upQueue, downQueue);
 		        // create baseline elevator(s)
 	 			final ArrayList<Elevator> e = new ArrayList<>();
 	 			createBaselineElevators(e);
 	 			// run baseline
 		        BaselineElevator.runBaseline(e, upQueue, downQueue);
 		        
-		        totalWaitTime += waitTime;
+		        baselineTotalWaitTime += waitTime;
 				waitTime = 0;
 				
-				double atwt = totalWaitTime / (SIZE * n);
+				double atwt = baselineTotalWaitTime / (SIZE * n);
 				System.out.println("awt: " + atwt * 15 / 60 + " min / person");
 		    	} 
 			else if (type == "main") {
+				// divides sequence array into; up/down queues
 				final ArrayList<Elevator> e = new ArrayList<>();
 				createMainElevators(e);
 				// run elevator
-				MainElevator.runElevator(e, upQueue, downQueue, mainSequence);
+				MainElevator.runElevator(e, mainSequence);
 				
-				totalWaitTime += waitTime;
+				mainTotalWaitTime += waitTime;
 				waitTime = 0;
 				
-				double atwt = totalWaitTime / (SIZE * n);
+				double atwt = mainTotalWaitTime / (SIZE * n);
 				System.out.println("awt: " + atwt * 5 / 60 + " min / person");
 		        }
 			
-			
-			
-			
-		
 		int percent = (int) Math.round((double) i /(double) n * 100);
 		ProgressBar.updateBar(percent);
 		}
@@ -247,6 +252,7 @@ public class CentralControl {
 
 	public static void main(final String[] args) throws FileNotFoundException, UnsupportedEncodingException{
 		
+		simulation1("baseline");
 		simulation1("main");
 		
 	}
