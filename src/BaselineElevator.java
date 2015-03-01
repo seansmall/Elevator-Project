@@ -17,17 +17,19 @@ public class BaselineElevator {
 		int day = 1920;
 
         // loop simulates a day. [1 unit = 15 sec]
-		for (int time = 0; time <= day; time++) {
+		for (int time = 1; time <= day; time++) {
 			
 			if (time == day && !(downQueue.isEmpty() && upQueue.isEmpty())) {
 				day++;
 			}
+			printToFile(e, writer, time);
+			
 			
 			// runs for every elevator
 			for (int i = 0; i < e.size(); i++) {
 				
 				// checks if any available passengers are going up
-				if (e.get(i).up == true) {
+				if (e.get(i).up) {
 					for (int j = 0; j < upQueue.size(); j++) {
 						// picks up passenger
 						if ((upQueue.get(j).pickedUp == false)
@@ -61,7 +63,7 @@ public class BaselineElevator {
 					}
 				}
 				// checks if any available passengers are going down
-				else if (e.get(i).down == true) {
+				else if (e.get(i).down) {
 					for (int j = 0; j < downQueue.size(); j++) {
 						// picks up passenger
 						if ((downQueue.get(j).pickedUp == false)
@@ -96,8 +98,6 @@ public class BaselineElevator {
 				}
 			}
 			
-			printToConsole(e, time);
-			printToFile(e, writer, time);
 				
 //				try {
 //				    Thread.sleep(2000);                 //1000 milliseconds is one second.
@@ -105,6 +105,7 @@ public class BaselineElevator {
 //				    Thread.currentThread().interrupt();
 //				}
 		}
+		writer.close();
 		
 		for (int i = 0; i < downQueue.size(); i++) {
 			System.out.println(downQueue.get(i).id);

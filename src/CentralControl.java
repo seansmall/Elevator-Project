@@ -6,8 +6,8 @@ import java.util.ArrayList;
 public class CentralControl {
 	
 	// Configurable values
-	public static final int SIZE = 500;
-	public static final int TOPFLOOR = 20;
+	public static final int SIZE = 1000;
+	public static final int TOPFLOOR = 25;
 	public static final int NUM_OF_ELEVATORS = 2;
 	private static final int NUM_OF_RUNS = 1;
 	private static final long SEED = 12345;
@@ -61,6 +61,7 @@ public class CentralControl {
 		int peopleDropedOff;
 		String status;
 		int internalClock;
+		boolean[] pushedButtons = new boolean[TOPFLOOR];
 
 		public Elevator
 		(final int pos, final boolean up,
@@ -76,7 +77,7 @@ public class CentralControl {
 		public Elevator
 		(final int pos, final boolean up,
 				final boolean down, final int weight,
-				final String type, final int per, String stat, final int time) {
+				final String type, final int per, String stat, final int time, final boolean[] buttons) {
 			this.position = pos;
 			this.up = up;
 			this.down = down;
@@ -127,6 +128,12 @@ public class CentralControl {
 		public void addTimeUnit() {
 			this.internalClock += 1;
 		}
+		public void pushButton(int floor) {
+			this.pushedButtons[floor] = true;
+		}
+		public void clearButton(int floor) {
+			this.pushedButtons[floor] = false;
+		}
 	}
 
 	public static void createQueues(final ArrayList<Person> sequence,
@@ -163,15 +170,17 @@ public class CentralControl {
 	
 	public static void createMainElevators(
 			final ArrayList<Elevator> e) {
+		boolean[] buttons = new boolean[TOPFLOOR];
+
 		for (int i = 0; i < CentralControl.NUM_OF_ELEVATORS; i++) {
 			// TODO: work on different configurations
 			if (i % 2 == 0) {
 				Elevator elevator =
-						new Elevator(1, true, false, 0, "Main", 0, "idle", 0);
+						new Elevator(1, true, false, 0, "Main", 0, "idle", 0, buttons);
 				e.add(elevator);
 			} else {
 				Elevator elevator =
-						new Elevator(TOPFLOOR, false, true, 0, "Main", 0, "idle", 0);
+						new Elevator(TOPFLOOR, false, true, 0, "Main", 0, "idle", 0, buttons);
 		        e.add(elevator);
 			}
 		}

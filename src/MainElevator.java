@@ -20,6 +20,9 @@ public class MainElevator {
         // loop simulates a day. [1 unit = 5 sec]
 		for (int time = 0; time <= day;) {
 			
+			if (time == day && !sequence.isEmpty()) {
+				day++;
+			}
 			
 			elevatorLoop: for (int i = 0; i < e.size(); i++) {
 				time = e.get(i).internalClock;
@@ -76,12 +79,32 @@ public class MainElevator {
 							sequence.get(j).setElevatorNr(i);
 							sequence.get(j).isPickedUp(true);
 							
-							if (sequence.get(j).startFloor < sequence.get(j).endFloor) {
-								e.get(i).setDirUp(true);
-								e.get(i).setDirDown(false);
-							} else if (sequence.get(j).startFloor > sequence.get(j).endFloor) {
-								e.get(i).setDirUp(false);
-								e.get(i).setDirDown(true);
+							e.get(i).pushButton(sequence.get(j).endFloor-1);
+							
+							// up check
+							boolean upCheck = false;
+							for (int a = e.get(i).position-1; a < e.get(i).pushedButtons.length; a++) {
+								if (e.get(i).pushedButtons[a] == true ) {
+									upCheck = true;
+								}
+							}
+							// down check
+							boolean downCheck = false;
+							for (int a = e.get(i).position-1; a > 0; a--) {
+								if (e.get(i).pushedButtons[a] == true ) {
+									downCheck = true;
+								}
+							}
+							if (upCheck == false || downCheck == false) {
+								
+								if (sequence.get(j).startFloor < sequence.get(j).endFloor) {
+									e.get(i).setDirUp(true);
+									e.get(i).setDirDown(false);
+								} else if (sequence.get(j).startFloor > sequence.get(j).endFloor) {
+									e.get(i).setDirUp(false);
+									e.get(i).setDirDown(true);
+								}
+								
 							}
 							
 							continue sequenceLoop;
@@ -89,6 +112,8 @@ public class MainElevator {
 						// drop of people
 						if ((sequence.get(j).elevator == i) && (sequence.get(j).pickedUp == true)
 							&& (e.get(i).position == sequence.get(j).endFloor)) {
+							
+							e.get(i).clearButton(e.get(i).position-1);
 								
 							CentralControl.waitTime += e.get(i).internalClock - sequence.get(j).arrivalTime;
 							// remove person from elevator
